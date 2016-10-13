@@ -11,7 +11,7 @@ var socket = new net.Socket();
 var barcode = "";
 var scan_start = 1;
 var scan_stop = 2;
-
+var status = false;
 //var COUNTS = 5;
 //var index = 0;
 var BARCODE_LENGTH = 3;
@@ -37,8 +37,10 @@ socket.on("data",function(data){
 	//var length = new Buffer(1);
 	//if(data.toString() == "end")
 	//	socket.end();
+	if(status)
+		return;
     var hdc = gui.getclientdc();
-	gui.fillbox(hdc,20,30,138,20);
+	gui.fillbox(hdc,20,30,139,20);
 	gui.textout(hdc,20,30,data.toString());
 	gui.releasedc(hdc);
 	//emitter.emit('paint');
@@ -72,7 +74,8 @@ gui.on('onPaint',function(hdc){
 	gui.rectangle(hdc,0,139,159,159);
 	//gui.circle(hdc,50,50,10);
 	gui.textout(hdc, 30, 2, "Scan Barcode");
-	gui.textout(hdc,30,141,"start ...");
+	gui.textout(hdc,30,141,"Status: start ...");
+	gui.textout(hdc,2,120,"'esc' to stop,'ok' to start");
 
 	//var rgb = {r:0,g:0,b:0};
     //gui.setpixelrgb(hdc,80,80,rgb);
@@ -93,6 +96,7 @@ gui.on('onKeydown',function(key){
 		  //socket.write(new Buffer("end"));
 		  if(fd != null){
 		  	socket.pause();
+		  	status = true;
 		    //console.log(socket);
 		    var buf_end = new Buffer(1);
 	        buf_end.write("\n");
@@ -106,6 +110,7 @@ gui.on('onKeydown',function(key){
 	      if(fd == null){
 	    	  fd = fs.openSync("/datafs/barcode.dat","a");
 		      socket.resume();
+		      status = false;
 	      }
 		  break;
 	}
@@ -116,12 +121,13 @@ gui.on('onKeyup',function(key){
 	switch(key){
 		case ESC:
 		  var hdc = gui.getclientdc();
-		  gui.textout(hdc, 30, 141, "Stop ...");
+		  gui.textout(hdc, 30, 141, "Status: stop ...");
+		  gui.fillbox(hdc,20,30,139,20);
           gui.releasedc(hdc);
           break;
         case OK:
           var hdc = gui.getclientdc();
-          gui.textout(hdc,30,141,"Start ...");
+          gui.textout(hdc,30,141,"Status: start ...");
           gui.releasedc(hdc);
           break;
 	}
