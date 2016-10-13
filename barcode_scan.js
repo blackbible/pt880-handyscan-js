@@ -21,11 +21,10 @@ var OK = 59;
 //console.log(socket);
 var result = socket.connect(port,"127.0.0.1");
 //console.log(result);
-
-var fd = fs.openSync("/datafs/barcode.dat","a");
-
-//console.log("data file has opened~~");
-//console.log("waiting scan barcode ...");
+var date = new Date();
+var today = date.toLocaleDateString();
+console.log(today);
+var fd = fs.openSync("/datafs/data/"+today+".dat","a");
 
 function Button(hdc,x0,x1,y0,y1){
 	this.x0 = x0;
@@ -108,7 +107,7 @@ gui.on('onKeydown',function(key){
 
 	    case OK:
 	      if(fd == null){
-	    	  fd = fs.openSync("/datafs/barcode.dat","a");
+	    	  fd = fs.openSync("/datafs/data/"+today+".dat","a");
 		      socket.resume();
 		      status = false;
 	      }
