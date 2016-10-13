@@ -20,7 +20,7 @@ var OK = 59;
 
 //console.log(socket);
 var result = socket.connect(port,"127.0.0.1");
-console.log(result);
+//console.log(result);
 
 var fd = fs.openSync("/datafs/barcode.dat","a");
 
@@ -92,7 +92,7 @@ gui.on('onKeydown',function(key){
 		case ESC:
 		  //socket.write(new Buffer("end"));
 		  if(fd != null){
-		  	socket.destroy();
+		  	socket.pause();
 		    //console.log(socket);
 		    var buf_end = new Buffer(1);
 	        buf_end.write("\n");
@@ -102,9 +102,12 @@ gui.on('onKeydown',function(key){
 		  }
 		  break;
 
-	/*	case OK:
-		  gui.invalidaterect(20,20,80,80,true);
-		  break;  */
+	    case OK:
+	      if(fd == null){
+	    	  fd = fs.openSync("/datafs/barcode.dat","a");
+		      socket.resume();
+	      }
+		  break;
 	}
 
 })
@@ -116,11 +119,11 @@ gui.on('onKeyup',function(key){
 		  gui.textout(hdc, 30, 141, "Stop ...");
           gui.releasedc(hdc);
           break;
-    /*    case OK:
+        case OK:
           var hdc = gui.getclientdc();
-          gui.textout(hdc,20,20,"hello!!");
+          gui.textout(hdc,30,141,"Start ...");
           gui.releasedc(hdc);
-          break;    */
+          break;
 	}
 
 })
