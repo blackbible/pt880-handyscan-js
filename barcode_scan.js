@@ -53,8 +53,7 @@ socket.on("data",function(data){
     fs.writeSync(fd,data,0,length,null);
     
    /* timer.setTimeout(function(){
-    	var hdc = gui.getclientdc();
-    	
+    	var hdc = gui.getclientdc();      
         //gui.drawtext(hdc,20,30,159,50,data.toString(),gui.drawtext.DT_LEFT | gui.drawtext.DT_WORDBREAK);
         gui.releasedc(hdc);
     },200);  */
@@ -66,27 +65,14 @@ socket.on("end",function(){
 })
 
 gui.on('onPaint',function(hdc){
-	//gui.setetpixelrgb(hdc,0,0,4);
 	//gui.lineto(hdc,10,10);
-	gui.rectangle(hdc,0,0,159,159);
-	gui.rectangle(hdc,0,0,159,20);
-	gui.rectangle(hdc,0,139,159,159);
 	//gui.circle(hdc,50,50,10);
-	gui.textout(hdc, 30, 2, "Scan Barcode");
-	gui.textout(hdc,30,141,"Status: start ...");
-	gui.textout(hdc,2,120,"'esc' to stop,'ok' to start");
 
-	//var rgb = {r:0,g:0,b:0};
-    //gui.setpixelrgb(hdc,80,80,rgb);
 	//gui.moveto(hdc,80,80);
 	//gui.lineto(hdc,160,160);
 
-    //console.log(rgb.r);
-    //console.log(rgb.g);
-    //console.log(rgb.b);
     //gui.fillbox(hdc,80,80,20,20);
-
-	gui.releasedc(hdc);
+    page1();
 })
 
 gui.on('onKeydown',function(key){
@@ -135,3 +121,16 @@ gui.on('onKeyup',function(key){
 
 gui.initialize();
 
+function page1(){
+    var hdc = gui.getclientdc();
+
+	gui.rectangle(hdc,0,0,159,159);
+	gui.rectangle(hdc,0,0,159,20);
+	gui.rectangle(hdc,0,139,159,159);
+
+    gui.textout(hdc, 30, 2, "Scan Barcode");
+	gui.textout(hdc,30,141,"Status: start ...");
+	gui.textout(hdc,2,120,"'esc' to stop,'ok' to start");
+
+    gui.releasedc(hdc);
+}
