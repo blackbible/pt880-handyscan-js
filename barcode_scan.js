@@ -1,10 +1,11 @@
-
+/*module required*/
 var net = require("net");
 var fs = require("fs");
 var constants = require("constants");
 var gui = require("gui");
-var timer = require("timers");
-var emitter = require("events").EventEmitter;
+
+//var timer = require("timers");
+//var emitter = require("events").EventEmitter;
 
 var port = 5500;
 var socket = new net.Socket();
@@ -12,15 +13,17 @@ var barcode = "";
 var scan_start = 1;
 var scan_stop = 2;
 var status = false;
-//var COUNTS = 5;
-//var index = 0;
+var pageindex = 1;
+
+/*key code*/
 var BARCODE_LENGTH = 3;
 var ESC = 1;
 var OK = 59;
+var ALPHA = 66;
+var BACKSPACE = 14;
 
-//console.log(socket);
 var result = socket.connect(port,"127.0.0.1");
-//console.log(result);
+
 var date = new Date();
 var today = date.toLocaleDateString();
 console.log(today);
@@ -72,7 +75,20 @@ gui.on('onPaint',function(hdc){
 	//gui.lineto(hdc,160,160);
 
     //gui.fillbox(hdc,80,80,20,20);
-    page1();
+    //pages.draw[pages.index]();
+    switch(pageindex){
+    	case 1:
+    	  page1();
+    	  pageindex = 1;
+    	  stack.push(pageindex);
+    	  break;
+    	case 2:
+    	  page2();
+    	  pageindex = 2;
+    	  stack.push(pageindex);
+    	  break;
+        
+    }
 })
 
 gui.on('onKeydown',function(key){
@@ -98,6 +114,16 @@ gui.on('onKeydown',function(key){
 		      status = false;
 	      }
 		  break;
+
+		case ALPHA:
+		  page2();
+		  pageindex = 2;
+		  break;
+
+	    case BACKSPACE:
+	      pageindex = stack.pop();
+	      gui.emit('onPaint');
+          break;
 	}
 
 })
@@ -124,6 +150,8 @@ gui.initialize();
 function page1(){
     var hdc = gui.getclientdc();
 
+    gui.fillbox(hdc,0,0,159,159);
+    
 	gui.rectangle(hdc,0,0,159,159);
 	gui.rectangle(hdc,0,0,159,20);
 	gui.rectangle(hdc,0,139,159,159);
@@ -134,3 +162,31 @@ function page1(){
 
     gui.releasedc(hdc);
 }
+
+function page2(){
+	var hdc = gui.getclientdc();
+	gui.fillbox(hdc,0,0,159,159);
+	gui.rectangle(hdc,0,0,159,159);
+
+	gui.releasedc(hdc);
+}
+
+var stack = {};
+stack.pointer = 0;
+stack.push = function(data){
+	if(pointer<15){
+		stack[pointer] = data;
+	    pointer++;
+	}else{
+		console.log('err: stack full~~~~');
+	}
+}
+stack.pop = function(){
+	if(pointer>0){
+		pointer--;
+	    return stack[pointer];
+	}else{
+		console.log('err: stack empty~~~~');
+	}
+}
+//var pages = {index:1, draw: {page1,page2}};
