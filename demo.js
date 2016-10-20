@@ -89,8 +89,8 @@ gui.on('onPaint',function(hdc){
 })
 
 gui.on('onKeydown',function(key){
-	//switch(pageindex){
-		//case 1:
+	switch(pageindex){
+		case 1:
 		  switch(key){
 		  	case ESC:
 		    //socket.write(new Buffer("end"));
@@ -188,12 +188,42 @@ gui.on('onKeydown',function(key){
             	break;
             }
           }
-       // break;
-	//}
-})
+    	break;
 
-gui.on('onKeyup',function(key){
+    	case 2:
+    		switch(key){
+    			case BACKSPACE:
+	        	{
+	        		if(pagestack.length > 1){
+	        			pagestack.pop();
+	        		}
+	        		gui.emit('onPaint');
+            		break;
+	        	}
+	        	case UP:
+	        	{
+	        		if(page2_itemnum > 0){
+	        			page2_itemnum--;
+	        			var hdc = gui.getclientdc();
+	        			gui.page2_select_item(hdc);
+	        			gui.releasedc(hdc);
+	        		}
+	        		break;
+	        	}
+	        	case DOWN:
+	        	{
+	        		if(page2_itemnum <= PAGE2_ITEM_NUM){
+	        			page2_itemnum++;
+	        			var hdc = gui.getclientdc();
+	        			gui.page2_select_item(hdc);
+	        			gui.releasedc(hdc);
+	        		}
+	        		break;
+	        	}
+    		}
+    		break;
 
+	}
 })
 
 gui.initialize();
@@ -210,23 +240,14 @@ function page1(){
 	gui.button(hdc,10,90,74,110,"Function");
 	gui.selectbutton(hdc);
 
-    gui.textout(hdc, 30, 2, "Scan Barcode");
+    gui.drawtext(hdc,0,1,159,20,"- - - Scan Barcode - - -",gui.drawtext.DT_CENTER);
 	gui.textout(hdc,30,141,"Status: start ...");
 	gui.textout(hdc,2,120,"'esc' to stop,'ok' to start");
 
     gui.releasedc(hdc);
 }
 
-/*gui page2*/
-function page2(){
-	var hdc = gui.getclientdc();
-	gui.fillbox(hdc,0,0,159,159);
-	gui.rectangle(hdc,0,0,159,159);
-
-	gui.releasedc(hdc);
-}
-
-/* Button */
+/* page1 Button */
 gui.button = function Button(hdc,x0,y0,x1,y1,str){
 	gui.rectangle(hdc,x0,y0,x1,y1);
 	gui.drawtext(hdc,x0,y0+2,x1,y1,str,gui.drawtext.DT_CENTER);
@@ -248,4 +269,50 @@ gui.selectbutton = function(hdc/*,x0,y0,x1,y1*/){
 			gui.fillbox(hdc,x0,y0-15,x1-x0,y1-y0-5);
         }
     }
+}
+
+/*gui page2*/
+function page2(){
+	var hdc = gui.getclientdc();
+	gui.fillbox(hdc,0,0,159,159);
+	gui.rectangle(hdc,0,0,159,159);
+	gui.rectangle(hdc,0,0,159,20);
+	gui.rectangle(hdc,0,20,159,40);
+	gui.rectangle(hdc,0,40,159,60);
+	gui.rectangle(hdc,0,60,159,80);
+	gui.rectangle(hdc,0,80,159,100);
+	gui.drawtext(hdc,0,1,159,20,"- - - Function - - -",gui.drawtext.DT_CENTER);
+	gui.drawtext(hdc,0,21,159,40,"1.show data",gui.drawtext.DT_CENTER);
+	gui.drawtext(hdc,0,41,159,60,"2.format set",gui.drawtext.DT_CENTER);
+
+	gui.releasedc(hdc);
+}
+
+/* page2 Items*/
+var page2_item_stack2 = new Array();
+var page2_itemnum = 0;
+var PAGE2_ITEM_NUM = 2;
+page2_item_stack2[1] = {x0:0,y0:21};
+page2_item_stack2[2] = {x0:0,y0:41};
+
+/* page2 selected item*/
+gui.page2_select_item = function(hdc/*,x0,y0,x1,y1*/){
+	for(var i =1; i<=PAGE2_ITEM_NUM; i++){
+        var x0 = page2_item_stack2[i].x0;
+        var y0 = page2_item_stack2[i].y0;
+        //var x1 = page2_item_stack2[i].x1;
+        //var y1 = page2_item_stack2[i].y1;
+        if(i == page2_itemnum){
+            gui.drawtext(hdc,x0+3,y0+2,x1+15,y1+20,">>>",gui.drawtext.DT_LEFT);
+        }else{
+			gui.fillbox(hdc,x0+3,y0+2,x1-x0+12,y1-y0+18);
+        }
+    }
+}
+
+/* gui page3*/
+function page3(){
+	var hdc = gui.getclientdc()
+
+	gui.releasedc(hdc);
 }
