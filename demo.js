@@ -30,7 +30,7 @@ var OK = 59;
 var ALPHA = 66;
 var BACKSPACE = 14;
 var UP = 103;
-var DOWM = 108;
+var DOWN = 108;
 var LEFT = 105;
 var RIGHT = 106;
 var ENTER = 28;
@@ -38,7 +38,6 @@ var ENTER = 28;
 var date = new Date();
 var today = date.toLocaleDateString();
 console.log(today);
-var fd = fs.openSync("/datafs/data/"+today+".dat","a");
 
 socket.on("data",function(data){
 	//var length = new Buffer(1);
@@ -57,9 +56,10 @@ socket.on("data",function(data){
 	var length = data.length;
 	buf_len.write(length.toString());
 
+	var fd = fs.openSync("/datafs/data/"+today+".dat","a");
 	fs.writeSync(fd,buf_len,0,BARCODE_LENGTH,null);
     fs.writeSync(fd,data,0,length,null);
-    
+    fs.closeSync(fd);
    /* timer.setTimeout(function(){
     	var hdc = gui.getclientdc();      
         //gui.drawtext(hdc,20,30,159,50,data.toString(),gui.drawtext.DT_LEFT | gui.drawtext.DT_WORDBREAK);
@@ -71,6 +71,10 @@ socket.on("data",function(data){
 socket.on("end",function(){
 	
 })
+
+gui.on('onCreate', function() {
+  console.log("Hi to onCreate ~");
+});
 
 gui.on('onPaint',function(hdc){
     pageindex = pagestack[pagestack.length-1];
@@ -86,7 +90,7 @@ gui.on('onPaint',function(hdc){
     	  break;
         
     }
-})
+});
 
 gui.on('onKeydown',function(key){
 	switch(pageindex){
@@ -100,6 +104,7 @@ gui.on('onKeydown',function(key){
 		        //console.log(socket);
 		        var buf_end = new Buffer(1);
 	            buf_end.write("\n");
+	            var fd = fs.openSync("/datafs/data/"+today+".dat","a");
 	            fs.writeSync(fd,buf_end,0,1,null);
 	            fs.closeSync(fd);
 	            fd = null;
@@ -113,7 +118,7 @@ gui.on('onKeydown',function(key){
 
 	        case OK:
 	        if(fd == null){
-	    	    fd = fs.openSync("/datafs/data/"+today+".dat","a");
+	    	    //fd = fs.openSync("/datafs/data/"+today+".dat","a");
 		        socket.resume();
 		        status = false;
 
@@ -202,29 +207,57 @@ gui.on('onKeydown',function(key){
 	        	}
 	        	case UP:
 	        	{
-	        		if(page2_itemnum > 0){
+	        		console.log("page2 up");
+	        		if(page2_itemnum > 1){
 	        			page2_itemnum--;
-	        			var hdc = gui.getclientdc();
-	        			gui.page2_select_item(hdc);
-	        			gui.releasedc(hdc);
+	        		}else{
+	        			page2_itemnum = PAGE2_ITEM_NUM;
 	        		}
+	        		console.log("item select 1");
+	        		//var hdc = gui.getclientdc();
+	        		gui.page2_select_item();
+	        		//gui.releasedc(hdc);
 	        		break;
 	        	}
 	        	case DOWN:
 	        	{
-	        		if(page2_itemnum <= PAGE2_ITEM_NUM){
+	        		console.log("page2 down");
+	        		if(page2_itemnum < PAGE2_ITEM_NUM){
 	        			page2_itemnum++;
-	        			var hdc = gui.getclientdc();
-	        			gui.page2_select_item(hdc);
-	        			gui.releasedc(hdc);
+	        		}else{
+	        			page2_itemnum = 1;
+	        		}
+	        		console.log("item select 1");
+	        		//var hdc = gui.getclientdc();
+	        		console.log("get hdc");
+	        		gui.page2_select_item(hdc);
+	        		console.log("select item end");
+	        		//gui.releasedc(hdc);
+	        		break;
+	        	}
+	        	case ENTER:
+	        	{
+	        		if(page2_itemnum == 1){
+	        			page2_item1page();
+	        			fd = fs.openSync("/datafs/data/"+today+".dat","a");
+
+	        			fs.closeSync(fd);
+	        		}else if(page2_itemnum == 2){
+
+	        		}else{
+
 	        		}
 	        		break;
 	        	}
     		}
     		break;
 
+    	case 3:
+    	{
+    		
+    	}
 	}
-})
+});
 
 gui.initialize();
 
@@ -284,35 +317,45 @@ function page2(){
 	gui.drawtext(hdc,0,1,159,20,"- - - Function - - -",gui.drawtext.DT_CENTER);
 	gui.drawtext(hdc,0,21,159,40,"1.show data",gui.drawtext.DT_CENTER);
 	gui.drawtext(hdc,0,41,159,60,"2.format set",gui.drawtext.DT_CENTER);
-
+	gui.page2_select_item();
 	gui.releasedc(hdc);
 }
 
 /* page2 Items*/
 var page2_item_stack2 = new Array();
-var page2_itemnum = 0;
+var page2_itemnum = 1;
 var PAGE2_ITEM_NUM = 2;
 page2_item_stack2[1] = {x0:0,y0:21};
 page2_item_stack2[2] = {x0:0,y0:41};
 
 /* page2 selected item*/
-gui.page2_select_item = function(hdc/*,x0,y0,x1,y1*/){
+gui.page2_select_item = function(){
 	for(var i =1; i<=PAGE2_ITEM_NUM; i++){
         var x0 = page2_item_stack2[i].x0;
         var y0 = page2_item_stack2[i].y0;
         //var x1 = page2_item_stack2[i].x1;
         //var y1 = page2_item_stack2[i].y1;
+        console.log("1");
+        var hdc = gui.getclientdc();
+        console.log(i);
+        console.log("itemnum" + page2_itemnum);
         if(i == page2_itemnum){
-            gui.drawtext(hdc,x0+3,y0+2,x1+15,y1+20,">>>",gui.drawtext.DT_LEFT);
+        	console.log("2.1");
+            gui.drawtext(hdc,x0+3,y0+1,x0+30,y0+15,">>>",gui.drawtext.DT_LEFT);
+            console.log("2.2");
         }else{
-			gui.fillbox(hdc,x0+3,y0+2,x1-x0+12,y1-y0+18);
+        	console.log("2");
+			gui.fillbox(hdc,x0+3,y0+1,30,15);
         }
+        gui.releasedc(hdc);
+        console.log("3");
     }
 }
 
-/* gui page3*/
-function page3(){
+/* gui page2_item1page*/
+function page2_item1page(){
 	var hdc = gui.getclientdc()
-
+	gui.fillbox(hdc,0,0,159,159);
+	gui.rectangle(hdc,0,0,159,159);
 	gui.releasedc(hdc);
 }
