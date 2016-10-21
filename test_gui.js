@@ -28,80 +28,82 @@ gui.on('onPaint', function(hdc) {
 });
 
 gui.on('onKeydown', function(key) {
+	var hdc = gui.getclientdc();
 	switch(key){
 		case 62: 
        // var hdc = gui.getclientdc();
        // gui.textout(hdc,40,40,"Scan");
        // gui.releasedc(hdc);
-		console.log("Scan");
+        gui.textout(hdc,40,40,"Scan");
+		//console.log("Scan");
 		break;
 		
 		case 1:
-		console.log("Esc");
+		gui.textout(hdc,40,40,"ESC");
 		break;
         
         case 59:
-        console.log("OK");
+        gui.textout(hdc,40,40,"ok");
         break;
 
         case 103:
-        console.log("up");
+        gui.textout(hdc,40,40,"up");
         break;
 
         case 108:
-        console.log("down");
+        gui.textout(hdc,40,40,"down");
         break;
 
         case 105:
-        console.log("left");
+        gui.textout(hdc,40,40,"left");
         break;
 
         case 106:
-        console.log("right");
+        gui.textout(hdc,40,40,"right");
         break;
 
         case 8:
-        console.log("7");
+        gui.textout(hdc,40,40,"7");
         break;
 
         case 9:
-        console.log("8");
+        gui.textout(hdc,40,40,"8");
         break;
 
         case 10:
-        console.log("9");
+        gui.textout(hdc,40,40,"9");
         break;
 
         case 5:
-        console.log("4");
+        gui.textout(hdc,40,40,"4");
         break;
 
         case 6:
-        console.log("5");
+        gui.textout(hdc,40,40,"5");
         break;
 
         case 7:
-        console.log("6");
+        gui.textout(hdc,40,40,"6");
         break;
 
         case 2:
-        console.log("1");
+        gui.textout(hdc,40,40,"1");
         break;
 
         case 3:
-        console.log("2");
+        gui.textout(hdc,40,40,"2");
         break;
         
         case 4:
-        console.log("3");
+        gui.textout(hdc,40,40,"3");
         break;
 
         case 11:
-        console.log("0");
+        gui.textout(hdc,40,40,"0");
         break;
 
         case 28:
-        console.log("Enter");
+        gui.textout(hdc,40,40,"ENTER");
         break;
 
         case 14:
