@@ -248,7 +248,7 @@ gui.on('onKeydown',function(key){
 	        		if(page2_itemnum == 1){
 	        			pagestack.push(3);
 	        			pageindex = 3;
-	        			page2_item1page();
+	        			page2_item1page(0);
 	        		}else if(page2_itemnum == 2){
 
 	        		}else{
@@ -272,10 +272,16 @@ gui.on('onKeydown',function(key){
 	        	}
 	        	case UP:
 	        	{
+	        		if(offset > 0){
+	        			offset--;
+	        			page2_item1page(offset);
+	        		}
 	        		break;
 	        	}
 	        	case DOWN:
 	        	{
+	        		offset++;
+	        		page2_item1page(offset);
 	        		break;
 	        	}
     		}
@@ -365,21 +371,22 @@ gui.page2_select_item = function(){
         console.log(i);
         console.log("itemnum" + page2_itemnum);
         if(i == page2_itemnum){
-        	console.log("2.1");
+        	//console.log("2.1");
             gui.drawtext(hdc,x0+3,y0+1,x0+30,y0+15,">>>",gui.drawtext.DT_LEFT);
-            console.log("2.2");
+            //console.log("2.2");
         }else{
         	console.log("2");
 			gui.fillbox(hdc,x0+3,y0+1,30,15);
         }
         gui.releasedc(hdc);
-        console.log("3");
+        //console.log("3");
     }
 }
 
 /* gui page2_item1page*/
-function page2_item1page(){
-	var hdc = gui.getclientdc()
+var offset = 0;
+function page2_item1page(offset){
+	var hdc = gui.getclientdc();
 	gui.fillbox(hdc,0,0,159,159);
 	gui.rectangle(hdc,0,0,159,159);
 	gui.rectangle(hdc,150,0,159,159);
@@ -387,6 +394,20 @@ function page2_item1page(){
 
 	fd = fs.openSync("/datafs/data/"+today+".dat","r");
 	console.log(fd);
+	//var position = 0;
+	while(offset > 0){
+		var buf_barcode_len = new Buffer(BARCODE_LENGTH);
+		var buf_barcode = new Buffer(30);
+		fs.readSync(fd,buf_barcode_len,0,BARCODE_LENGTH,null);
+		var i = 1;
+	    while(buf_barcode_len != i)
+	    	i++;
+	    //position = position + BARCODE_LENGTH + i;
+	    var buf_barcode = new Buffer(30);
+	    fs.readSync(fd,buf_barcode,0,i,null);
+	    offset--;
+	}
+
 	var buf_barcode_len = new Buffer(BARCODE_LENGTH);
 	var buf_barcode = new Buffer(30);
 	var x0 = 20;
@@ -394,8 +415,7 @@ function page2_item1page(){
 	var x1 = 140;
 	var y1 = y0 + 15;
 	var count = 0;
-	while(count < 10){
-		fs.readSync(fd,buf_barcode_len,0,BARCODE_LENGTH,null)
+	while(count < 10 && fs.readSync(fd,buf_barcode_len,0,BARCODE_LENGTH,null) > 0){
 		console.log("len:" + buf_barcode_len);
 	    var i = 1;
 	    while(buf_barcode_len != i)
