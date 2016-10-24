@@ -15,6 +15,7 @@ var barcode = "";
 var scan_start = 1;
 var scan_stop = 2;
 var status = false;
+var scan_yesno = false;
 var BUTTONNUM = 1;
 
 /* pagestack */
@@ -35,6 +36,7 @@ var LEFT = 105;
 var RIGHT = 106;
 var ENTER = 28;
 
+var fd;
 var date = new Date();
 var today = date.toLocaleDateString();
 console.log(today);
@@ -56,16 +58,17 @@ socket.on("data",function(data){
 	var length = data.length;
 	buf_len.write(length.toString());
 
-	var fd = fs.openSync("/datafs/data/"+today+".dat","a");
+	fd = fs.openSync("/datafs/data/"+today+".dat","a");
 	fs.writeSync(fd,buf_len,0,BARCODE_LENGTH,null);
     fs.writeSync(fd,data,0,length,null);
     fs.closeSync(fd);
+
+    scan_yesno = true;
    /* timer.setTimeout(function(){
     	var hdc = gui.getclientdc();      
         //gui.drawtext(hdc,20,30,159,50,data.toString(),gui.drawtext.DT_LEFT | gui.drawtext.DT_WORDBREAK);
         gui.releasedc(hdc);
     },200);  */
-
 })
 
 socket.on("end",function(){
@@ -81,14 +84,16 @@ gui.on('onPaint',function(hdc){
     console.log(pageindex);
     switch(pageindex){
     	case 1:
-    	  page1();
+    		page1();
     	  //pagestack.push(1);
-    	  break;
+    		break;
     	case 2:
-    	  page2();
+    		page2();
     	  //pagestack.push(2);
-    	  break;
-        
+    		break;
+        case 3:
+        	page2_item1page();
+        	break;
     }
 });
 
@@ -98,17 +103,20 @@ gui.on('onKeydown',function(key){
 		  switch(key){
 		  	case ESC:
 		    //socket.write(new Buffer("end"));
+		    console.log("ESC");
 		    if(fd != null){
 		    	socket.pause();
 		  	    status = true;
 		        //console.log(socket);
-		        var buf_end = new Buffer(1);
-	            buf_end.write("\n");
-	            var fd = fs.openSync("/datafs/data/"+today+".dat","a");
-	            fs.writeSync(fd,buf_end,0,1,null);
-	            fs.closeSync(fd);
+		        /*if(scan_yesno == true){
+		        	var buf_end = new Buffer(1);
+	            	buf_end.write("\n");
+	            	fd = fs.openSync("/datafs/data/"+today+".dat","a");
+	            	fs.writeSync(fd,buf_end,0,1,null);
+	            	fs.closeSync(fd);
+		        }*/
 	            fd = null;
-
+	            console.log("file close");
 	            var hdc = gui.getclientdc();
 		        gui.textout(hdc, 30, 141, "Status: stop ...");
 		        gui.fillbox(hdc,1,30,149,20);
@@ -118,10 +126,10 @@ gui.on('onKeydown',function(key){
 
 	        case OK:
 	        if(fd == null){
-	    	    //fd = fs.openSync("/datafs/data/"+today+".dat","a");
+	    	    fd = fs.openSync("/datafs/data/"+today+".dat","a");
 		        socket.resume();
 		        status = false;
-
+		        scan_yesno = false;
 		        var hdc = gui.getclientdc();
                 gui.textout(hdc,30,141,"Status: start ...");
                 gui.releasedc(hdc);
@@ -238,10 +246,9 @@ gui.on('onKeydown',function(key){
 	        	case ENTER:
 	        	{
 	        		if(page2_itemnum == 1){
+	        			pagestack.push(3);
+	        			pageindex = 3;
 	        			page2_item1page();
-	        			fd = fs.openSync("/datafs/data/"+today+".dat","a");
-
-	        			fs.closeSync(fd);
 	        		}else if(page2_itemnum == 2){
 
 	        		}else{
@@ -254,7 +261,25 @@ gui.on('onKeydown',function(key){
 
     	case 3:
     	{
-    		
+    		switch(key){
+    			case BACKSPACE:
+	        	{
+	        		if(pagestack.length > 1){
+	        			pagestack.pop();
+	        		}
+	        		gui.emit('onPaint');
+            		break;
+	        	}
+	        	case UP:
+	        	{
+	        		break;
+	        	}
+	        	case DOWN:
+	        	{
+	        		break;
+	        	}
+    		}
+    		break;
     	}
 	}
 });
@@ -357,5 +382,34 @@ function page2_item1page(){
 	var hdc = gui.getclientdc()
 	gui.fillbox(hdc,0,0,159,159);
 	gui.rectangle(hdc,0,0,159,159);
+	gui.rectangle(hdc,150,0,159,159);
 	gui.releasedc(hdc);
+
+	fd = fs.openSync("/datafs/data/"+today+".dat","r");
+	console.log(fd);
+	var buf_barcode_len = new Buffer(BARCODE_LENGTH);
+	var buf_barcode = new Buffer(30);
+	var x0 = 20;
+	var y0 = 2;
+	var x1 = 140;
+	var y1 = y0 + 15;
+	var count = 0;
+	while(count < 10){
+		fs.readSync(fd,buf_barcode_len,0,BARCODE_LENGTH,null)
+		console.log("len:" + buf_barcode_len);
+	    var i = 1;
+	    while(buf_barcode_len != i)
+	    	i++;
+	    //console.log(buf_barcode_len == 8);
+	    var buf_barcode = new Buffer(30);
+	    fs.readSync(fd,buf_barcode,0,i,null);
+	    var hdc = gui.getclientdc();
+	    gui.drawtext(hdc,x0,y0,x1,y1,buf_barcode.toString(),gui.drawtext.DT_LEFT);
+	    count++;
+	    y0 = y1;
+	    y1 = y0 + 15;
+	    console.log(buf_barcode.toString());
+	    var buf_barcode_len = new Buffer(BARCODE_LENGTH);
+	}
+	fs.closeSync(fd);
 }
