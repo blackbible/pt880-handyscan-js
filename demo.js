@@ -35,6 +35,18 @@ var DOWN = 108;
 var LEFT = 105;
 var RIGHT = 106;
 var ENTER = 28;
+var ONE = 2;
+var TWO = 3;
+
+/* page number*/
+var PAGE1 = 1;
+var PAGE2 = 2;
+var PAGE3 = 3;
+var PAGE4 = 4;
+
+/* data_array */
+var data_array = {0:"",1:"",2:""};
+var data_index = 0;
 
 var fd;
 var date = new Date();
@@ -47,10 +59,27 @@ socket.on("data",function(data){
 	//	socket.end();
 	if(status)
 		return;
+	data_array[data_index] = data;
+	console.log(data_array[data_index]);
+	if(data_index < 2){
+		data_index++;
+	}else{
+		data_index = 0;
+	}
+	console.log(data_index);
+
     var hdc = gui.getclientdc();
-	gui.fillbox(hdc,1,30,149,20);
-	gui.drawtext(hdc,1,30,159,50,data.toString(),gui.drawtext.DT_CENTER);
-	gui.releasedc(hdc);
+    gui.fillbox(hdc,1,30,149,20);
+    gui.drawtext(hdc,1,30,159,50,data_array[data_index].toString(),gui.drawtext.DT_CENTER);
+    gui.fillbox(hdc,1,50,149,20);
+    gui.drawtext(hdc,1,50,159,70,data_array[(data_index+1)%3].toString(),gui.drawtext.DT_CENTER);
+    gui.fillbox(hdc,1,70,149,20);
+    gui.drawtext(hdc,1,70,159,90,data_array[(data_index+2)%3].toString(),gui.drawtext.DT_CENTER);
+    gui.releasedc(hdc);
+
+	//gui.fillbox(hdc,1,30,149,20);
+	//gui.drawtext(hdc,1,30,159,50,data.toString(),gui.drawtext.DT_CENTER);
+
 	//emitter.emit('paint');
 	//console.log(data.toString());
 
@@ -83,59 +112,65 @@ gui.on('onPaint',function(hdc){
     pageindex = pagestack[pagestack.length-1];
     console.log(pageindex);
     switch(pageindex){
-    	case 1:
+    	case PAGE1:
     		page1();
     	  //pagestack.push(1);
     		break;
-    	case 2:
+    	case PAGE2:
     		page2();
     	  //pagestack.push(2);
     		break;
-        case 3:
+        case PAGE3:
         	page2_item1page();
         	break;
+        case PAGE4:
+        	page2_item2page();
     }
 });
 
 gui.on('onKeydown',function(key){
 	switch(pageindex){
-		case 1:
-		  switch(key){
-		  	case ESC:
-		    //socket.write(new Buffer("end"));
-		    console.log("ESC");
-		    if(fd != null){
-		    	socket.pause();
-		  	    status = true;
-		        //console.log(socket);
-		        /*if(scan_yesno == true){
-		        	var buf_end = new Buffer(1);
-	            	buf_end.write("\n");
-	            	fd = fs.openSync("/datafs/data/"+today+".dat","a");
-	            	fs.writeSync(fd,buf_end,0,1,null);
-	            	fs.closeSync(fd);
-		        }*/
-	            fd = null;
-	            console.log("file close");
-	            var hdc = gui.getclientdc();
-		        gui.textout(hdc, 30, 141, "Status: stop ...");
-		        gui.fillbox(hdc,1,30,149,20);
-                gui.releasedc(hdc);
-		    }
-		    break;
-
-	        case OK:
-	        if(fd == null){
-	    	    fd = fs.openSync("/datafs/data/"+today+".dat","a");
-		        socket.resume();
-		        status = false;
-		        scan_yesno = false;
-		        var hdc = gui.getclientdc();
-                gui.textout(hdc,30,141,"Status: start ...");
-                gui.releasedc(hdc);
-	        }
-		    break;
-
+		case PAGE1:
+		{
+			switch(key){
+		  		case ESC:
+		  		{
+		  			//socket.write(new Buffer("end"));
+		    		console.log("ESC");
+		    		if(fd != null){
+		    			socket.pause();
+		  	    		status = true;
+		        	//console.log(socket);
+		        	/*if(scan_yesno == true){
+		        		var buf_end = new Buffer(1);
+	            		buf_end.write("\n");
+	            		fd = fs.openSync("/datafs/data/"+today+".dat","a");
+	            		fs.writeSync(fd,buf_end,0,1,null);
+	            		fs.closeSync(fd);
+		        	}*/
+	            		fd = null;
+	            		console.log("file close");
+	            		var hdc = gui.getclientdc();
+		        		gui.textout(hdc, 30, 141, "Status: stop ...");
+		        		gui.fillbox(hdc,1,30,149,20);
+                		gui.releasedc(hdc);
+		   			}
+		    		break;
+		  		}
+		    	
+	        	case OK:
+	        	{
+	        		if(fd == null){
+	    	    		fd = fs.openSync("/datafs/data/"+today+".dat","a");
+		        		socket.resume();
+		        		status = false;
+		        		scan_yesno = false;
+		        		var hdc = gui.getclientdc();
+                		gui.textout(hdc,30,141,"Status: start ...");
+                		gui.releasedc(hdc);
+	        		}
+		    		break;
+	        	}
 		    /*case ALPHA:
 		    if(pageindex != 2){
 		    	page2();
@@ -144,68 +179,73 @@ gui.on('onKeydown',function(key){
 		    }
 		   // pageindex = 2;
 		    break; */
-
-	        case BACKSPACE:
-	        {
-	        	if(pagestack.length > 1){
-	        		pagestack.pop();
+	        	case BACKSPACE:
+	        	{
+	        		if(pagestack.length > 1){
+	        			pagestack.pop();
+	        		}
+	        		gui.emit('onPaint');
+            		break;
 	        	}
-	        	gui.emit('onPaint');
-            	break;
-	        }
-	        
-
-            //case UP:
-            case LEFT:
-            {
-            	if(buttonnum > 0)
-            		buttonnum--;
-            	var hdc = gui.getclientdc();
-            	if(buttonnum > 0){
-            		gui.selectbutton(hdc);
-            	}else{
-            		console.log("left button select");
-            		for(var i =1; i<=BUTTONNUM; i++){
-            	        var x0 = buttonstack[i].x0;
-            	        var y0 = buttonstack[i].y0;
-            	        var x1 = buttonstack[i].x1;
-            	        var y1 = buttonstack[i].y1;
-            	    	gui.fillbox(hdc,x0,y0-15,x1-x0,y1-y0-5);       
+            	//case UP:
+            	/*case LEFT:
+            	{
+            		if(buttonnum > 0)
+            			buttonnum--;
+            		var hdc = gui.getclientdc();
+            		if(buttonnum > 0){
+            			gui.selectbutton(hdc);
+            		}else{
+            			console.log("left button select");
+            			for(var i =1; i<=BUTTONNUM; i++){
+            	        	var x0 = buttonstack[i].x0;
+            	        	var y0 = buttonstack[i].y0;
+            	        	var x1 = buttonstack[i].x1;
+            	        	var y1 = buttonstack[i].y1;
+            	    		gui.fillbox(hdc,x0,y0-15,x1-x0,y1-y0-5);       
+            			}
+            			console.log("left button select end");
             		}
-            		console.log("left button select end");
+            		gui.releasedc(hdc);
+            		break;
+            	}*/
+
+            	//case DOWN:
+            	/*case RIGHT:
+            	{
+            		if(buttonnum < BUTTONNUM)
+            			buttonnum++;
+                	var hdc = gui.getclientdc();
+                	gui.selectbutton(hdc,x0,y0,x1,y1);
+            		gui.releasedc(hdc);
+            		break;
             	}
-            	gui.releasedc(hdc);
-            	break;
-            }
 
-            //case DOWN:
-            case RIGHT:
-            {
-            	if(buttonnum < BUTTONNUM)
-            		buttonnum++;
-                var hdc = gui.getclientdc();
-                gui.selectbutton(hdc,x0,y0,x1,y1);
-            	gui.releasedc(hdc);
-            	break;
-            }
-
-            case ENTER:
-            {
-            	if(buttonnum == 1){
-            		if(pageindex != 2){
-		    			page2();
-		        		pagestack.push(2);
-		        		pageindex = 2;
-		    		}
+            	case ENTER:
+            	{
+            		if(buttonnum == 1){
+            			if(pageindex != 2){
+		    				page2();
+		        			pagestack.push(2);
+		        			pageindex = 2;
+		    			}
+            		}
+            		break;
+            	}*/
+            	case ONE:
+            	{
+            		page2();
+		        	pagestack.push(2);
+		        	pageindex = 2;
+            		break;
             	}
-            	break;
-            }
-          }
-    	break;
-
-    	case 2:
+        	}
+    		break;
+		}
+		  
+    	case PAGE2:
     		switch(key){
-    			case BACKSPACE:
+    			case ESC:
 	        	{
 	        		if(pagestack.length > 1){
 	        			pagestack.pop();
@@ -243,14 +283,30 @@ gui.on('onKeydown',function(key){
 	        		//gui.releasedc(hdc);
 	        		break;
 	        	}
-	        	case ENTER:
+	        	case ONE:
+	        	{
+	        		pagestack.push(3);
+	        		pageindex = 3;
+	        		page2_item1page(0);
+	        		break;
+	        	}
+	        	case TWO:
+	        	{
+	        		pagestack.push(4);
+	        		pageindex = 4;
+	        		page2_item1page(0);
+	        		break;
+	        	}
+	        	case OK:
 	        	{
 	        		if(page2_itemnum == 1){
 	        			pagestack.push(3);
 	        			pageindex = 3;
 	        			page2_item1page(0);
 	        		}else if(page2_itemnum == 2){
-
+	        			pagestack.push(4);
+	        			pageindex = 4;
+	        			page2_item2page();
 	        		}else{
 
 	        		}
@@ -259,10 +315,10 @@ gui.on('onKeydown',function(key){
     		}
     		break;
 
-    	case 3:
+    	case PAGE3:
     	{
     		switch(key){
-    			case BACKSPACE:
+    			case ESC:
 	        	{
 	        		if(pagestack.length > 1){
 	        			pagestack.pop();
@@ -287,6 +343,20 @@ gui.on('onKeydown',function(key){
     		}
     		break;
     	}
+
+    	case PAGE4:
+    	{
+    		switch(key){
+    			case ESC:
+	        	{
+	        		if(pagestack.length > 1){
+	        			pagestack.pop();
+	        		}
+	        		gui.emit('onPaint');
+            		break;
+	        	}
+	        }
+    	}
 	}
 });
 
@@ -297,21 +367,27 @@ function page1(){
     var hdc = gui.getclientdc();
 
     gui.fillbox(hdc,0,0,159,159);
-    
 	gui.rectangle(hdc,0,0,159,159);
 	gui.rectangle(hdc,0,0,159,20);
 	gui.rectangle(hdc,0,139,159,159);
-	gui.button(hdc,10,90,74,110,"Function");
-	gui.selectbutton(hdc);
-
-    gui.drawtext(hdc,0,1,159,20,"- - - Scan Barcode - - -",gui.drawtext.DT_CENTER);
+	//gui.button(hdc,10,90,74,110,"Function");
+	//gui.selectbutton(hdc);
+    gui.drawtext(hdc,0,1,159,20,"- - - Scan - - -",gui.drawtext.DT_CENTER);
 	gui.textout(hdc,30,141,"Status: start ...");
-	gui.textout(hdc,2,120,"'esc' to stop,'ok' to start");
-
+	gui.drawtext(hdc,0,120,155,140,"1.Function>>>",gui.drawtext.DT_RIGHT);
+	//gui.textout(hdc,2,120,"'esc' to stop,'ok' to start");
+	//var hdc = gui.getclientdc();
+    gui.fillbox(hdc,1,30,149,20);
+    gui.drawtext(hdc,1,30,159,50,data_array[data_index].toString(),gui.drawtext.DT_CENTER);
+    gui.fillbox(hdc,1,50,149,20);
+    gui.drawtext(hdc,1,50,159,70,data_array[(data_index+1)%3].toString(),gui.drawtext.DT_CENTER);
+    gui.fillbox(hdc,1,70,149,20);
+    gui.drawtext(hdc,1,70,159,90,data_array[(data_index+2)%3].toString(),gui.drawtext.DT_CENTER);
+    //gui.releasedc(hdc);
     gui.releasedc(hdc);
 }
 
-/* page1 Button */
+/*
 gui.button = function Button(hdc,x0,y0,x1,y1,str){
 	gui.rectangle(hdc,x0,y0,x1,y1);
 	gui.drawtext(hdc,x0,y0+2,x1,y1,str,gui.drawtext.DT_CENTER);
@@ -320,8 +396,8 @@ var buttonstack = new Array();
 buttonstack[1] = {x0:10,y0:90,x1:74,y1:110};
 var buttonnum = 0;
 
-/* selected button*/
-gui.selectbutton = function(hdc/*,x0,y0,x1,y1*/){
+
+gui.selectbutton = function(hdc,x0,y0,x1,y1){
 	for(var i =1; i<=BUTTONNUM; i++){
         var x0 = buttonstack[i].x0;
         var y0 = buttonstack[i].y0;
@@ -333,7 +409,7 @@ gui.selectbutton = function(hdc/*,x0,y0,x1,y1*/){
 			gui.fillbox(hdc,x0,y0-15,x1-x0,y1-y0-5);
         }
     }
-}
+}*/
 
 /*gui page2*/
 function page2(){
@@ -398,7 +474,10 @@ function page2_item1page(offset){
 	while(offset > 0){
 		var buf_barcode_len = new Buffer(BARCODE_LENGTH);
 		var buf_barcode = new Buffer(30);
-		fs.readSync(fd,buf_barcode_len,0,BARCODE_LENGTH,null);
+		var result = fs.readSync(fd,buf_barcode_len,0,BARCODE_LENGTH,null);
+		console.log(result);
+		if(result == 0)
+			break;
 		var i = 1;
 	    while(buf_barcode_len != i)
 	    	i++;
@@ -432,4 +511,12 @@ function page2_item1page(offset){
 	    var buf_barcode_len = new Buffer(BARCODE_LENGTH);
 	}
 	fs.closeSync(fd);
+}
+
+function page2_item2page(){
+	var hdc = gui.getclientdc();
+	gui.fillbox(hdc,0,0,159,159);
+	gui.rectangle(hdc,0,0,159,159);
+	gui.rectangle(hdc,150,0,159,159);
+	gui.releasedc(hdc);
 }
